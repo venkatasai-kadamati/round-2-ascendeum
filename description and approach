@@ -1,0 +1,69 @@
+-- Approach
+1. On analysis, tried to normalize the dataset in 3 tables to save memory and compute.
+	-- Ensures that we work only on the main table (time_entries) and this is facilitate SCD Type of modelling
+
+--  Data Model 
+-- Create the resources table
+CREATE TABLE resources (
+    id INT PRIMARY KEY,
+    resource_id INT
+);
+
+-- Create the time_entries table with indexes
+CREATE TABLE time_entries (
+    id INT PRIMARY KEY,
+    created_time DATETIME,
+    resource_id INT,
+    date DATE,
+    weekday INT,
+    start_time DATETIME,
+    end_time DATETIME,
+    is_clock_in BOOLEAN,
+    is_clock_out BOOLEAN,
+    last_checkin_time DATETIME,
+    next_checkin_time DATETIME,
+    auto_clock_out BOOLEAN,
+    idle_seconds_before_last_checkin INT,
+    clock_in_start_time DATETIME,
+    afk_time_min INT,
+    afk_msg_ts FLOAT,
+    is_activity_tracked BOOLEAN,
+    disable_activity_tracker_id INT,
+    disable_activity_tracker_reason VARCHAR(255),
+    activity_tracker_disabled_time_min INT,
+    previous_timer_id INT,
+    next_timer_id INT,
+    is_revoke_clockout BOOLEAN,
+    FOREIGN KEY (resource_id) REFERENCES resources(id),
+    FOREIGN KEY (previous_timer_id) REFERENCES time_entries(id),
+    FOREIGN KEY (next_timer_id) REFERENCES time_entries(id)
+);
+
+-- Add non-clustered index on resource_id
+CREATE INDEX idx_resource_id ON time_entries (resource_id);
+
+-- Add non-clustered index on start_time and end_time
+CREATE INDEX idx_clock_times ON time_entries (start_time, end_time);
+
+-- Add B-tree index on date column
+CREATE INDEX idx_date ON time_entries (date);
+
+-- Create the activity_tracker_status table
+CREATE TABLE activity_tracker_status (
+    id INT PRIMARY KEY,
+    time_entry_id INT,
+    disable_activity_tracker_id INT,
+    disable_activity_tracker_reason VARCHAR(255),
+    activity_tracker_disabled_time_min INT,
+    FOREIGN KEY (time_entry_id) REFERENCES time_entries(id)
+);
+
+
+-------------------------------------------------------------
+-- query optimzation
+1. have an index on resource_id --> clustered index 
+2. clock_in_time and clock_out_time --> nonclustered index
+3. date column --> btree index 
+
+
+-- ai generated - optimized using the instruction I gave regarding the index requriement at the bottom 
