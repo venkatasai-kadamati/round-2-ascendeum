@@ -1,0 +1,10 @@
+
+-- Query 
+	select  
+		resource_id,
+		date,
+		max(start_time) as clock_in_time,
+		max(clock_out_time) as clock_out_time,
+		max(start_time) - max(clock_out_time) as total_hours
+	from time_entries
+	group by resource_id, date
